@@ -37,26 +37,6 @@
       --shadow-ink:0 12px 24px -10px rgba(20,19,38,.5);
       --font-display:'Clash Display','Satoshi',system-ui,sans-serif;--font-body:'Satoshi',system-ui,sans-serif;
     }
-    [data-theme="dark"] {
-      --color-bg:#15141f;
-      --bg-blob-1:#2b1f40;--bg-blob-2:#1e2440;--bg-blob-3:#3a2038;
-      --color-surface:#201e2c;--color-surface-2:#272534;--color-surface-offset:#2f2d3e;--color-border:#332f44;--color-border-strong:#443e5a;
-      --color-ink:#ffffff;
-      --color-text:#efecf8;--color-text-muted:#a9a5c0;--color-text-faint:#7a7692;--color-text-inverse:#141326;
-      --color-primary:#9b8cff;--color-primary-hover:#b0a4ff;--color-primary-soft:#2c2748;
-      --slider-from:#a98bff;--slider-to:#ff8fd8;
-      --color-blue:#6fa0ff;--color-blue-soft:#1f2a45;
-      --color-warning:#eaa64d;--color-warning-soft:#3a2b14;
-      --color-violet:#a98bff;--color-violet-soft:#2a2148;
-      --color-success:#40cf8f;--color-success-soft:#173a2b;
-      --color-error:#ff6f97;--color-error-soft:#3d1f2b;
-      --pastel-yellow:#e6b94a;--pastel-lav:#8f7fd6;--pastel-pink:#c874b8;--pastel-mint:#5fb98d;--pastel-peri:#7d8bde;
-      --shadow-sm:0 2px 6px rgba(0,0,0,.35);
-      --shadow-md:0 20px 44px -20px rgba(0,0,0,.65);
-      --shadow-lg:0 30px 60px -22px rgba(0,0,0,.75);
-      --shadow-ink:0 12px 24px -10px rgba(0,0,0,.6);
-    }
-
     *{box-sizing:border-box;margin:0;padding:0}
     html{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
     body{min-height:100vh;color:var(--color-text);font:var(--text-base)/1.6 var(--font-body);background:var(--color-bg);position:relative;overflow-x:hidden}
@@ -77,8 +57,6 @@
     h1 .accent{display:inline-block;padding:0 .35rem;border-radius:var(--radius-md);background:var(--pastel-pink);color:var(--color-ink);transform:rotate(-1.5deg)}
     .lede{margin-top:var(--space-2);max-width:56ch;color:var(--color-text-muted);font-size:var(--text-base)}
     .top-actions{display:flex;align-items:center;gap:var(--space-3);flex:none}
-    .theme-toggle{display:grid;place-items:center;min-width:52px;min-height:52px;padding:var(--space-2);border:none;border-radius:var(--radius-full);background:var(--color-ink);color:var(--color-text-inverse);box-shadow:var(--shadow-ink);font-size:1.2rem;transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
-    .theme-toggle:hover{transform:translateY(-2px) rotate(-14deg)}
 
     /* Cards / layout */
     .stack{display:grid;gap:var(--space-5);min-width:0}
@@ -246,8 +224,8 @@
     .form-section .card-head{margin-bottom:var(--space-3)}
     .modal-foot{flex:none;background:var(--color-surface);border-top:2px solid var(--color-border);padding:clamp(1rem,2vw,1.25rem) clamp(1.25rem,2.2vw,1.75rem);display:flex;gap:var(--space-3);justify-content:flex-end;flex-wrap:wrap}
 
-    .toast{position:fixed;left:50%;bottom:2rem;transform:translate(-50%,150%);z-index:200;display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 1.4rem;border-radius:var(--radius-full);background:var(--color-ink);color:var(--color-text-inverse);font-weight:700;font-size:var(--text-sm);box-shadow:var(--shadow-lg);transition:transform .4s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
-    .toast.show{transform:translate(-50%,0)}
+    .toast{position:fixed;left:50%;bottom:2rem;transform:translate(-50%,150%);z-index:200;display:inline-flex;align-items:center;gap:.6rem;padding:.9rem 1.4rem;border-radius:var(--radius-full);background:var(--color-ink);color:var(--color-text-inverse);font-weight:700;font-size:var(--text-sm);box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s ease,visibility .3s;pointer-events:none}
+    .toast.show{transform:translate(-50%,0);opacity:1;visibility:visible}
 
     @keyframes pop{0%{transform:scale(.97);opacity:0}100%{transform:scale(1);opacity:1}}
     .card{animation:pop .4s ease both}
@@ -289,7 +267,6 @@
       </div>
       <div class="top-actions">
         <button class="btn btn-primary" id="addPerson">＋ Add person</button>
-        <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch theme">☾</button>
       </div>
     </header>
 
@@ -456,7 +433,7 @@ function cssVal(name){ return getComputedStyle(document.documentElement).getProp
 
 /* Persistence */
 function saveState(){
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ metrics, dealBreakers, people, selectedPersonId, theme: document.documentElement.getAttribute('data-theme') })); } catch(e){}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ metrics, dealBreakers, people, selectedPersonId })); } catch(e){}
 }
 function loadState(){
   try {
@@ -466,7 +443,6 @@ function loadState(){
     if(Array.isArray(data.dealBreakers)) dealBreakers = data.dealBreakers;
     if(Array.isArray(data.people)) people = data.people.map(p => ({...p, dealBreakers: p.dealBreakers || []}));
     selectedPersonId = data.selectedPersonId || null;
-    if(data.theme){ document.documentElement.setAttribute('data-theme', data.theme); }
     if(selectedPersonId){ const p = people.find(x => x.id === selectedPersonId); if(p){ metrics = cloneMetrics(p.metrics); dealBreakers = cloneDeals(p.dealBreakers); } }
   } catch(e){}
 }
@@ -765,18 +741,8 @@ qs('#notes').addEventListener('input', saveStateDebounced);
 let saveDebounce=null; function saveStateDebounced(){ clearTimeout(saveDebounce); saveDebounce=setTimeout(saveState,400); }
 qs('#exportPdf').addEventListener('click', exportPdf);
 
-qs('[data-theme-toggle]').addEventListener('click', ()=>{
-  const root=document.documentElement;
-  const next=root.getAttribute('data-theme')==='dark'?'light':'dark';
-  root.setAttribute('data-theme',next);
-  qs('[data-theme-toggle]').textContent = next==='dark'?'☀︎':'☾';
-  saveState();
-  renderMetrics(); renderDealBreakers(); updateAssessment(); renderPeople();
-});
-
 /* Init */
 loadState();
-qs('[data-theme-toggle]').textContent = document.documentElement.getAttribute('data-theme')==='dark'?'☀︎':'☾';
 if(selectedPersonId){ const p = people.find(x => x.id === selectedPersonId); if(p){ qs('#personName').value = p.name; qs('#notes').value = p.notes || ''; } }
 updateScoreName(); renderMetrics(); renderDealBreakers(); updateAssessment(); renderPeople();
 if(selectedPersonId && people.find(p => p.id === selectedPersonId)){ setModalTitle(`Editing ${people.find(p => p.id === selectedPersonId).name}`); openModal(); }
